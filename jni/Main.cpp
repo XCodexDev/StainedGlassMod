@@ -2,14 +2,30 @@
 #include <mcpelauncher.h>
 #include <dlfcn.h>
 #include <android/log.h>
+#include <string>
 
-Tile::setShape(float, float, float, float, float, float); (Mangled Version: _ZN4Tile8setShapeEffffff);
+#include "Substrate.h"
+
+Class Common {
+public:
+    std::string getGameVersionString;
+};
+
+// GameVersionString changed to *blah
+// Also gonna add gui for the Credits Screen...
+static std::string(*Common$getGameVersionString)();
+static std::string Common$getGameVersionString() {
+    return "Stained Glass Mod By The Gigabit Team";
+}
+
+static void(*Tile$initTile)();
 
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
 void* handle = dlopen("libminecraftpe.so", RTLD_LAZY);
 dlerror();
-// insert hooks here
-const char* error = dlerror();
-if(error) __android_log_print(ANDROID_LOG_INFO, TAG, "dlerror: %s", error);
+
+MSHookFunction((void*) &Tile::initTile, (void*) &Tile$initTile, (void**) &_Tile$initTile);
+MSHookFunction((void*) &Common::getGameVersionString, (void*) &Common$getGameVersionString, (void**) &_Common$getGameVersionString);
+
 return JNI_VERSION_1_2;
 }
